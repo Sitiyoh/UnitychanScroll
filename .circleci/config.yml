@@ -1,22 +1,35 @@
- version: 2
- jobs:
-   one:
-     docker:
-       - image: circleci/ruby:2.4.1
-     steps:
-       - checkout
-       - run: echo "A first hello"
-       - run: sleep 25
-   two:
-     docker:
-       - image: circleci/ruby:2.4.1
-     steps:
-       - checkout
-       - run: echo "A more familiar hi"
-       - run: sleep 15
- workflows:
-   version: 2
-   one_and_two:
-     jobs:
-       - one
-       - two
+version: 2
+
+common_stepup_commaand: &common_stepup_commaand
+  command: |
+    echo 'export PATH=$PATH:${CIRCLE_WORKING_DIRECTORY}/.circleci' >> $BASH_ENV
+jobs:
+  build:
+    docker:
+      - image: busybox
+    steps:
+      - run: echo "これはビルドタスクです"
+  rspec:
+    docker:
+      - image: circleci/ruby:2.5.5
+    steps:
+      - checkout
+      - run:
+          <<: *common_stepup_commaand
+      - run:
+          name: Run
+          command: |
+            if is_changed "server"; then
+              cd server
+              bundle exec rspec
+            else
+              echo "serverに変更はなかったよ"
+            fi
+workflows:
+  version: 2
+  test:
+    jobs:
+      - build
+      - rspec:
+          requires:
+            - build
