@@ -19,7 +19,7 @@ jobs:
       - run:
           name: Run
           command: |
-            if is_changed "server"; then
+            if bash is_changed "server"; then
             # ToDo: 実際にrspecを回すようにする
               cd server
               # bundle update
